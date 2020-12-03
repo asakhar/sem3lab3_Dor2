@@ -1,0 +1,20 @@
+BasedOnStyle: LLVM
+IndentWidth: 2
+Language: Cpp
+Standard: Cpp11
+DerivePointerAlignment: false
+PointerAlignment: Left
+AlignConsecutiveAssignments: true
+AlignEscapedNewlines: Right
+AlignTrailingComments: true
+AllowAllArgumentsOnNextLine: true
+AllowAllConstructorInitializersOnNextLine: true
+AllowAllParametersOfDeclarationOnNextLine: true
+AlwaysBreakTemplateDeclarations: Yes
+BreakBeforeBraces: Allman
+# BraceWrapping:
+#   AfterEnum: true
+#   AfterStruct: true
+#   SplitEmptyFunction: true
+BreakBeforeTernaryOperators: true
+ColumnLimit: 130
