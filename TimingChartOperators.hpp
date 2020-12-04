@@ -35,4 +35,5 @@ public:
   Chart& operator*=(size_t n);
   Chart& operator>>=(int tshift);
   Chart& operator<<=(int tshift);
+  Chart& mergeBlocks();
 };

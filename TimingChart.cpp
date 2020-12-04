@@ -85,6 +85,8 @@ Chart Chart::add(Chart const& second) const
   for (size_t i = 0; i < second.size(); i++)
     result.sections[result.csize++] = sections[i];
 
+  result.mergeBlocks();
+
   return result;
 }
 
@@ -110,6 +112,7 @@ Chart& Chart::replace(int timestamp, Chart const& second)
   i++;
   for (; i < size(); i++)
     result.insertSignalBlock(Signal(sections[i].state, sections[i].time));
+  result.mergeBlocks();
   return *this = std::move(result);
 }
 
@@ -121,6 +124,7 @@ Chart& Chart::repeat(size_t n)
     for (size_t j = 0; j < size(); j++)
       sections[i * size() + j] = sections[j];
   csize = size() * n;
+  mergeBlocks();
   return *this;
 }
 
@@ -150,6 +154,7 @@ Chart& Chart::rshift(int tshift)
     result.insertSignalBlock(Signal(sections[i].state, sections[i].time));
   if (time - tshift)
     result.insertSignalBlock(Signal(sections[i].state, time - tshift));
+  result.mergeBlocks();
   return *this = std::move(result);
 }
 Chart& Chart::lshift(int tshift)
@@ -178,6 +183,7 @@ Chart& Chart::lshift(int tshift)
     result.insertSignalBlock(Signal(sections[i].state, sections[i].time));
   if (tshift - time + sections[i].time)
     result.insertSignalBlock(Signal(sections[i].state, tshift - time + sections[i].time));
+  result.mergeBlocks();
   return *this = std::move(result);
 }
 
@@ -194,4 +200,34 @@ void Chart::insertSignalBlock(Signal&& sig)
   if (csize == __n)
     throw std::runtime_error("Cannot insert block.");
   sections[csize++] = sig;
+}
+void Chart::insertSignalBlock(Signal const& sig)
+{
+  if (csize == __n)
+    throw std::runtime_error("Cannot insert block.");
+  sections[csize++] = sig;
+}
+
+Chart& Chart::mergeBlocks()
+{
+  char last             = '\0';
+  int block_time        = 1;
+  size_t resulting_size = 0;
+  for (size_t i = 0; i < size(); i++)
+  {
+    if (last == sections[i].state)
+      block_time += sections[i].time;
+    else
+    {
+      if (last != '\0')
+      {
+        sections[resulting_size++] = Signal(last, block_time);
+        block_time                 = 1;
+      }
+      last = sections[i].state;
+    }
+  }
+  sections[resulting_size++] = Signal(last, block_time);
+  csize                      = resulting_size;
+  return *this;
 }

@@ -31,8 +31,10 @@ public:
   Chart add(Chart const& second) const;
   int get_total_time() const;
   void insertSignalBlock(Signal&& sig);
+  void insertSignalBlock(Signal const& sig);
   Chart& replace(int timestamp, Chart const& second);
   Chart& repeat(size_t n);
   Chart& rshift(int tshift);
   Chart& lshift(int tshift);
+  Chart& mergeBlocks();
 };
