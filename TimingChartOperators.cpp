@@ -90,10 +90,27 @@ Chart Chart::operator+(Chart const& second) const
 
 Chart& Chart::operator()(int timestamp, Chart const& second)
 {
-  // if (size() + second.size() > __n)
-  //   throw std::runtime_error("Charts were too long.");
+  Chart result;
+  int time = 0;
+  size_t i = 0;
+  for (; i < size(); i++)
+  {
+    time += sections[i].time;
+    if (time >= timestamp)
+      break;
+    result.insertSignalBlock(Signal(sections[i].state, sections[i].time));
+  }
+  if (i == size())
+    throw std::runtime_error("Timestamp arg was out of avaliable signal time range.");
+  result.insertSignalBlock(Signal(sections[i].state, sections[i].time - time + timestamp - 1));
 
-  return *this;
+  for (size_t j = 0; j < second.size(); j++)
+    result.insertSignalBlock(Signal(second.sections[j].state, second.sections[j].time));
+  result.insertSignalBlock(Signal(sections[i].state, time - timestamp));
+  i++;
+  for (; i < size(); i++)
+    result.insertSignalBlock(Signal(sections[i].state, sections[i].time));
+  return *this = std::move(result);
 }
 
 Chart& Chart::operator*=(size_t n)
@@ -182,16 +199,18 @@ void Chart::insertSignalBlock(Signal&& sig)
 int main()
 {
   Chart a = Chart("111100XXXXX");
+  std::cout << a << std::endl;
+  a(5, Chart("XXX"));
   // a *= 7;
-  for (auto i = 1; i < a.get_total_time() + 1; i++)
-  {
-    std::cout << a << std::endl;
-    a >>= 1;
-  }
-  for (auto i = 1; i < a.get_total_time() + 1; i++)
-  {
-    std::cout << a << std::endl;
-    a <<= 1;
-  }
+  // for (auto i = 1; i < a.get_total_time() + 1; i++)
+  // {
+  //   std::cout << a << std::endl;
+  //   a >>= 1;
+  // }
+  // for (auto i = 1; i < a.get_total_time() + 1; i++)
+  // {
+  //   std::cout << a << std::endl;
+  //   a <<= 1;
+  // }
   std::cout << a;
 }

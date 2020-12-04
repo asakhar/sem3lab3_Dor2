@@ -90,10 +90,27 @@ Chart Chart::add(Chart const& second) const
 
 Chart& Chart::replace(int timestamp, Chart const& second)
 {
-  // if (size() + second.size() > __n)
-  //   throw std::runtime_error("Charts were too long.");
+  Chart result;
+  int time = 0;
+  size_t i = 0;
+  for (; i < size(); i++)
+  {
+    time += sections[i].time;
+    if (time >= timestamp)
+      break;
+    result.insertSignalBlock(Signal(sections[i].state, sections[i].time));
+  }
+  if (i == size())
+    throw std::runtime_error("Timestamp arg was out of avaliable signal time range.");
+  result.insertSignalBlock(Signal(sections[i].state, sections[i].time - time + timestamp - 1));
 
-  return *this;
+  for (size_t j = 0; j < second.size(); j++)
+    result.insertSignalBlock(Signal(second.sections[j].state, second.sections[j].time));
+  result.insertSignalBlock(Signal(sections[i].state, time - timestamp));
+  i++;
+  for (; i < size(); i++)
+    result.insertSignalBlock(Signal(sections[i].state, sections[i].time));
+  return *this = std::move(result);
 }
 
 Chart& Chart::repeat(size_t n)
