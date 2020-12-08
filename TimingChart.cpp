@@ -61,6 +61,7 @@ Chart::Chart(char const* ascii_symbs) : csize{0}
 
 std::istream& Chart::input(std::istream& st)
 {
+  st >> csize;
   for (size_t i = 0; i < csize; i++)
     sections[i].input(st);
   return st;
@@ -78,15 +79,13 @@ Chart Chart::add(Chart const& second) const
   if (size() + second.size() > __n)
     throw std::runtime_error("Charts were too long.");
   Chart result;
-
   for (size_t i = 0; i < size(); i++)
     result.sections[result.csize++] = sections[i];
 
   for (size_t i = 0; i < second.size(); i++)
-    result.sections[result.csize++] = sections[i];
+    result.sections[result.csize++] = second.sections[i];
 
   result.mergeBlocks();
-
   return result;
 }
 
@@ -130,7 +129,7 @@ Chart& Chart::repeat(size_t n)
 
 Chart& Chart::rshift(int tshift)
 {
-  if (tshift == 0)
+  if (get_total_time() == 0 || tshift == 0)
     return *this;
   if (tshift < 0)
     return lshift(-tshift);
@@ -159,7 +158,7 @@ Chart& Chart::rshift(int tshift)
 }
 Chart& Chart::lshift(int tshift)
 {
-  if (tshift == 0)
+  if (tshift == 0 || get_total_time() == 0)
     return *this;
   if (tshift < 0)
     return rshift(-tshift);
@@ -201,17 +200,13 @@ void Chart::insertSignalBlock(Signal&& sig)
     throw std::runtime_error("Cannot insert block.");
   sections[csize++] = sig;
 }
-void Chart::insertSignalBlock(Signal const& sig)
-{
-  if (csize == __n)
-    throw std::runtime_error("Cannot insert block.");
-  sections[csize++] = sig;
-}
 
 Chart& Chart::mergeBlocks()
 {
+  if (size() == 0)
+    return *this;
   char last             = '\0';
-  int block_time        = 1;
+  int block_time        = sections[0].time;
   size_t resulting_size = 0;
   for (size_t i = 0; i < size(); i++)
   {
@@ -222,7 +217,7 @@ Chart& Chart::mergeBlocks()
       if (last != '\0')
       {
         sections[resulting_size++] = Signal(last, block_time);
-        block_time                 = 1;
+        block_time                 = sections[i].time;
       }
       last = sections[i].state;
     }

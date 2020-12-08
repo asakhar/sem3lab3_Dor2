@@ -61,6 +61,7 @@ Chart::Chart(char const* ascii_symbs) : csize{0}
 
 std::istream& operator>>(std::istream& st, Chart& chart)
 {
+  st >> chart.csize;
   for (size_t i = 0; i < chart.csize; i++)
     st >> chart.sections[i];
   return st;
@@ -134,7 +135,7 @@ Chart& Chart::operator*=(size_t n)
 
 Chart& Chart::operator>>=(int tshift)
 {
-  if (tshift == 0)
+  if (get_total_time() == 0 || tshift == 0)
     return *this;
   if (tshift < 0)
     return *this <<= -tshift;
@@ -165,7 +166,7 @@ Chart& Chart::operator>>=(int tshift)
 }
 Chart& Chart::operator<<=(int tshift)
 {
-  if (tshift == 0)
+  if (get_total_time() == 0 || tshift == 0)
     return *this;
   if (tshift < 0)
     return *this >>= -tshift;
@@ -212,8 +213,10 @@ void Chart::insertSignalBlock(Signal&& sig)
 
 Chart& Chart::mergeBlocks()
 {
+  if(size() == 0)
+    return *this;
   char last             = '\0';
-  int block_time        = 1;
+  int block_time        = sections[0].time;
   size_t resulting_size = 0;
   for (size_t i = 0; i < size(); i++)
   {
@@ -224,7 +227,7 @@ Chart& Chart::mergeBlocks()
       if (last != '\0')
       {
         sections[resulting_size++] = Signal(last, block_time);
-        block_time                 = 1;
+        block_time                 = sections[i].time;
       }
       last = sections[i].state;
     }
@@ -232,25 +235,4 @@ Chart& Chart::mergeBlocks()
   sections[resulting_size++] = Signal(last, block_time);
   csize                      = resulting_size;
   return *this;
-}
-
-int main()
-{
-  Chart a = Chart("111100XXXXX");
-  // std::cout << a << std::endl;
-  // a(5, Chart("XXX"));
-  // a *= 7;
-  for (auto i = 1; i < a.get_total_time() + 1; i++)
-  {
-    std::cout << a << std::endl;
-    a >>= 1;
-  }
-  a.mergeBlocks();
-  a;
-  // for (auto i = 1; i < a.get_total_time() + 1; i++)
-  // {
-  //   std::cout << a << std::endl;
-  //   a <<= 1;
-  // }
-  std::cout << a;
 }
