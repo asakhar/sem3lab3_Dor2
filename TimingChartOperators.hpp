@@ -36,4 +36,9 @@ public:
   Chart& operator>>=(int tshift);
   Chart& operator<<=(int tshift);
   Chart& mergeBlocks();
+
+  // получить блок сигнала по индексу (с проверкой границ)
+  Signal const& at(size_t n) const;
+  // получить блок сигнала по индексу (без проверки границ)
+  Signal const& operator[](size_t n) const;
 };

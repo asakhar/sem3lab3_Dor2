@@ -144,14 +144,14 @@ Chart& Chart::rshift(int tshift)
       break;
   }
   auto pos = i;
-  if (sections[i].time - time + tshift)
+  if (sections[i].time - time + tshift != 0)
     result.insertSignalBlock(Signal(sections[i].state, sections[i].time - time + tshift));
   i++;
   for (; i < size(); i++)
     result.insertSignalBlock(Signal(sections[i].state, sections[i].time));
   for (i = 0; i < pos; i++)
     result.insertSignalBlock(Signal(sections[i].state, sections[i].time));
-  if (time - tshift)
+  if (time - tshift != 0)
     result.insertSignalBlock(Signal(sections[i].state, time - tshift));
   result.mergeBlocks();
   return *this = std::move(result);
@@ -162,28 +162,29 @@ Chart& Chart::lshift(int tshift)
     return *this;
   if (tshift < 0)
     return rshift(-tshift);
-  Chart result;
-  int time = 0;
-  tshift %= get_total_time();
-  auto i = 0;
-  for (; i < size(); i++)
-  {
-    time += sections[i].time;
-    if (time >= tshift)
-      break;
-  }
-  auto pos = i;
-  if (time - tshift)
-    result.insertSignalBlock(Signal(sections[i].state, time - tshift));
-  i++;
-  for (; i < size(); i++)
-    result.insertSignalBlock(Signal(sections[i].state, sections[i].time));
-  for (i = 0; i < pos; i++)
-    result.insertSignalBlock(Signal(sections[i].state, sections[i].time));
-  if (tshift - time + sections[i].time)
-    result.insertSignalBlock(Signal(sections[i].state, tshift - time + sections[i].time));
-  result.mergeBlocks();
-  return *this = std::move(result);
+  return rshift(get_total_time() - tshift);
+  // Chart result;
+  // int time = 0;
+  // tshift %= get_total_time();
+  // auto i = 0;
+  // for (; i < size(); i++)
+  // {
+  //   time += sections[i].time;
+  //   if (time >= tshift)
+  //     break;
+  // }
+  // auto pos = i;
+  // if (time - tshift)
+  //   result.insertSignalBlock(Signal(sections[i].state, time - tshift));
+  // i++;
+  // for (; i < size(); i++)
+  //   result.insertSignalBlock(Signal(sections[i].state, sections[i].time));
+  // for (i = 0; i < pos; i++)
+  //   result.insertSignalBlock(Signal(sections[i].state, sections[i].time));
+  // if (tshift - time + sections[i].time)
+  //   result.insertSignalBlock(Signal(sections[i].state, tshift - time + sections[i].time));
+  // result.mergeBlocks();
+  // return *this = std::move(result);
 }
 
 int Chart::get_total_time() const
@@ -194,7 +195,7 @@ int Chart::get_total_time() const
   return result;
 }
 
-void Chart::insertSignalBlock(Signal&& sig)
+void Chart::insertSignalBlock(Signal const& sig)
 {
   if (csize == __n)
     throw std::runtime_error("Cannot insert block.");
@@ -225,4 +226,11 @@ Chart& Chart::mergeBlocks()
   sections[resulting_size++] = Signal(last, block_time);
   csize                      = resulting_size;
   return *this;
+}
+
+Signal const& Chart::getBlock(size_t n) const
+{
+  if (n >= size())
+    throw std::out_of_range("");
+  return sections[n];
 }

@@ -7,7 +7,7 @@ void input_chart(Chart& chart)
 {
   std::cout << "Input signal sections for chart:\n\
   number of section - first line;\n\
-  sections - then (format <state|0, 1 or X> <time|initeger>): \n";
+  sections - then (format <state|0, 1 or X> <time|integer>): \n";
   chart.input(std::cin);
 }
 void add_chart(Chart& chart)

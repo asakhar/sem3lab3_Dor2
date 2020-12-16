@@ -84,7 +84,7 @@ Chart Chart::operator+(Chart const& second) const
     result.sections[result.csize++] = sections[i];
 
   for (size_t i = 0; i < second.size(); i++)
-    result.sections[result.csize++] = sections[i];
+    result.sections[result.csize++] = second.sections[i];
 
   result.mergeBlocks();
 
@@ -213,7 +213,7 @@ void Chart::insertSignalBlock(Signal&& sig)
 
 Chart& Chart::mergeBlocks()
 {
-  if(size() == 0)
+  if (size() == 0)
     return *this;
   char last             = '\0';
   int block_time        = sections[0].time;
@@ -236,3 +236,12 @@ Chart& Chart::mergeBlocks()
   csize                      = resulting_size;
   return *this;
 }
+
+Signal const& Chart::at(size_t n) const
+{
+  if (n >= size())
+    throw std::out_of_range("");
+  return sections[n];
+}
+
+Signal const& Chart::operator[](size_t n) const { return sections[n]; }
