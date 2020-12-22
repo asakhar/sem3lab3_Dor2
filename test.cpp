@@ -1,4 +1,4 @@
-#include "TimingChartOperators.hpp"
+#include "TimingChartDynamic.hpp"
 #include <gtest/gtest.h>
 #include <sstream>
 
@@ -37,6 +37,7 @@ TEST(TimingChartTest, ConcatsTwoDiagrams)
   ASSERT_EQ(c.size(), 7); // merge check
   ASSERT_STREQ(ss.str().c_str(), "1111100XX1111XXX00X");
 }
+
 TEST(TimingChartTest, ReplaceTimestampWithOtherChart)
 {
   std::stringstream ss;
@@ -46,6 +47,16 @@ TEST(TimingChartTest, ReplaceTimestampWithOtherChart)
   ASSERT_EQ(a.size(), 8); // merge check
   ASSERT_STREQ(ss.str().c_str(), "1111XXX00X11100XX1");
 }
+
+TEST(TimingChartTest, ExceptionsChecks)
+{
+  std::stringstream ss;
+  Chart a{"1111100XX1"}, b{"111XXX00X"};
+  ASSERT_THROW(a(11, b), std::out_of_range);
+  ASSERT_THROW(Chart("1110XXa"), std::runtime_error);
+  ASSERT_THROW(a.at(5), std::out_of_range);
+}
+
 TEST(TimingChartTest, RepeatesChart)
 {
   std::stringstream ss;
@@ -54,9 +65,8 @@ TEST(TimingChartTest, RepeatesChart)
   ss << a;
   ASSERT_EQ(a.size(), 10); // merge check
   ASSERT_STREQ(ss.str().c_str(), "1111100XX11111100XX11111100XX1");
-  ASSERT_THROW(a *= 3, std::runtime_error); // overflow check
+  // ASSERT_THROW(a *= 3, std::runtime_error); // overflow check works only for static release
 }
-
 
 TEST(TimingChartTest, ShiftsChartToTheLeft)
 {
@@ -78,7 +88,6 @@ TEST(TimingChartTest, ShiftsChartToTheLeft)
   ASSERT_STREQ(ss.str().c_str(), "111100XX11");
   ss.str("");
 }
-
 
 TEST(TimingChartTest, ShiftsChartToTheRight)
 {
